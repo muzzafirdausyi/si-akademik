@@ -14,6 +14,7 @@ class AuthController
 
     echo '<div style="max-width:400px;margin:50px auto;padding:20px;border:1px solid #ccc;border-radius:8px;font-family:sans-serif;">';
     echo "<h1>Sistem Informasi Akademik</h1>";
+
     if ($flash) {
         echo "<div style='padding:10px;background:#f8d7da;color:#721c24;margin-bottom:10px;border-radius:4px;'>$flash</div>";
     }
