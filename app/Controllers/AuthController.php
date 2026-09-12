@@ -13,8 +13,7 @@ class AuthController
     unset($_SESSION['flash']);
 
     echo '<div style="max-width:400px;margin:50px auto;padding:20px;border:1px solid #ccc;border-radius:8px;font-family:sans-serif;">';
-    echo '<h2 style="text-align:center;">Login Sistem Akademik</h2>';
-
+   echo '<h2 style="text-align:center;">Portal Login Mahasiswa</h2>';
     if ($flash) {
         echo "<div style='padding:10px;background:#f8d7da;color:#721c24;margin-bottom:10px;border-radius:4px;'>$flash</div>";
     }
