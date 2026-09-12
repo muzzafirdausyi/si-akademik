@@ -1,4 +1,6 @@
 <?php
+// Update: menambahkan komentar untuk keperluan dokumentasi Git
+
 namespace App\Controllers;
 
 class HomeController
