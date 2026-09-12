@@ -7,6 +7,6 @@ class HomeController
 {
     public function index(): void
     {
-        echo "Halaman Home - Selamat datang di SI Akademik";
+       echo '<hr><p style="text-align:center;color:gray;">© 2026 SI Akademik</p>';
     }
 }
