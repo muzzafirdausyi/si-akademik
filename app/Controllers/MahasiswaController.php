@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Core\Controller;   //ditambahkan ini untuk acara 10
 use App\Repositories\MahasiswaRepository;
 use App\Repositories\ProdiRepository;
+use App\Services\MahasiswaService;   // <-- TAMBAHKAN INI
 use App\Core\Database;
 use App\Entities\Mahasiswa;
 
@@ -11,22 +12,32 @@ class MahasiswaController extends Controller
 {
     private MahasiswaRepository $repo;
     private ProdiRepository $prodiRepo;
+    private MahasiswaService $service;   // <-- TAMBAHKAN INI
 
     public function __construct()
     {
-        // Controller "meminta" Database::getInstance() SEKALI di sini,
-        // lalu menyuntikkannya ke Repository
         $db = Database::getInstance();
         $this->repo = new MahasiswaRepository($db);
         $this->prodiRepo = new ProdiRepository($db);
+        $this->service = new MahasiswaService($this->repo, $this->prodiRepo);   // <-- TAMBAHKAN INI
     }
 
     public function index(): void
     {
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
         $keyword = trim($_GET['q'] ?? '');
         $mahasiswa = $keyword !== '' ? $this->repo->search($keyword) : $this->repo->all();
 
         echo "<h3>Daftar Mahasiswa</h3>";
+
+        if ($flash) {
+            $class = $flash['type'] === 'success' ? '#198754' : '#dc3545';
+            echo "<div style='padding:10px;border-radius:5px;margin-bottom:12px;color:#fff;background:{$class}'>"
+                 . htmlspecialchars($flash['message']) . "</div>";
+        }
+
         echo '<a href="' . BASE_PATH . '/mahasiswa/create">+ Tambah Mahasiswa</a><br><br>';
 
         echo '<form method="GET" action="' . BASE_PATH . '/mahasiswa">';
@@ -52,11 +63,21 @@ class MahasiswaController extends Controller
         echo "<script>function confirmDelete(){return confirm('Yakin ingin menghapus data ini?');}</script>";
     }
 
-    public function create(): void
-    {
-        $daftarProdi = $this->prodiRepo->all();
+   public function create(): void
+{
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+    
+    $daftarProdi = $this->prodiRepo->all();
 
-        echo "<h3>Tambah Mahasiswa</h3>";
+    echo "<h3>Tambah Mahasiswa</h3>";
+
+    if ($flash) {
+        $class = $flash['type'] === 'success' ? '#198754' : '#dc3545';
+        echo "<div style='padding:10px;border-radius:5px;margin-bottom:12px;color:#fff;background:{$class}'>"
+             . htmlspecialchars($flash['message']) . "</div>";
+    }
+
         echo '<form method="POST" action="' . BASE_PATH . '/mahasiswa">';
         echo 'NIM: <input type="text" name="nim" required><br>';
         echo 'Nama: <input type="text" name="nama" required><br>';
@@ -71,29 +92,25 @@ class MahasiswaController extends Controller
         echo '</form>';
     }
 
+    // GANTI SELURUH ISI store() DENGAN INI:
     public function store(): void
     {
-        try {
-            // Bikin OBJEK Mahasiswa, bukan array biasa lagi
-            $mhs = new Mahasiswa();
-            $mhs->setNim(trim($_POST['nim'] ?? ''));
-            $mhs->setNama(trim($_POST['nama'] ?? ''));
-            $mhs->setEmail(trim($_POST['email'] ?? ''));
-            $mhs->setProdiId((int) ($_POST['prodi_id'] ?? 0));
-            $mhs->setAngkatan((int) ($_POST['angkatan'] ?? date('Y')));
+        $result = $this->service->create($_POST);
 
-            $this->repo->create($mhs);
-             $this->redirect('/mahasiswa');
-
-        } catch (\InvalidArgumentException $e) {
-            // Validasi dari setter gagal -> tampilkan pesan error
-            echo "Gagal menyimpan: " . $e->getMessage();
-            echo '<br><a href="' . BASE_PATH . '/mahasiswa/create">Kembali</a>';
+        if ($result['success']) {
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Data mahasiswa berhasil ditambahkan'];
+            $this->redirect('/mahasiswa');
+        } else {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => reset($result['errors'])];
+            $this->redirect('/mahasiswa/create');
         }
     }
 
     public function edit(int $id): void
     {
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
         $data = $this->repo->find($id);
         if (!$data) {
             http_response_code(404);
@@ -104,6 +121,13 @@ class MahasiswaController extends Controller
         $daftarProdi = $this->prodiRepo->all();
 
         echo "<h3>Edit Mahasiswa</h3>";
+
+        if ($flash) {
+            $class = $flash['type'] === 'success' ? '#198754' : '#dc3545';
+            echo "<div style='padding:10px;border-radius:5px;margin-bottom:12px;color:#fff;background:{$class}'>"
+                 . htmlspecialchars($flash['message']) . "</div>";
+        }
+
         echo '<form method="POST" action="' . BASE_PATH . '/mahasiswa/' . $id . '/update">';
         echo 'NIM: <input type="text" name="nim" value="' . $data['nim'] . '" required><br>';
         echo 'Nama: <input type="text" name="nama" value="' . $data['nama'] . '" required><br>';
@@ -119,30 +143,35 @@ class MahasiswaController extends Controller
         echo '</form>';
     }
 
+    // GANTI SELURUH ISI update() DENGAN INI:
     public function update(int $id): void
     {
-        try {
-            $mhs = new Mahasiswa();
-            $mhs->setNim(trim($_POST['nim'] ?? ''));
-            $mhs->setNama(trim($_POST['nama'] ?? ''));
-            $mhs->setEmail(trim($_POST['email'] ?? ''));
-            $mhs->setProdiId((int) ($_POST['prodi_id'] ?? 0));
-            $mhs->setAngkatan((int) ($_POST['angkatan'] ?? date('Y')));
+        $result = $this->service->update($id, $_POST);
 
-            $this->repo->update($id, $mhs);
+        if ($result['success']) {
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Data mahasiswa berhasil diubah'];
             $this->redirect('/mahasiswa');
-
-        } catch (\InvalidArgumentException $e) {
-            echo "Gagal update: " . $e->getMessage();
-            echo '<br><a href="' . BASE_PATH . '/mahasiswa/' . $id . '/edit">Kembali</a>';
+        } else {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => reset($result['errors'])];
+            $this->redirect('/mahasiswa/' . $id . '/edit');
         }
     }
 
-    public function destroy(int $id): void
-    {
+ public function destroy(int $id): void
+{
+    try {
         $this->repo->delete($id);
-        $this->redirect('/mahasiswa');
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Data mahasiswa berhasil dihapus'];
+    } catch (\PDOException $e) {
+        error_log(
+            date('Y-m-d H:i:s') . ' - Gagal hapus mahasiswa: ' . $e->getMessage() . PHP_EOL,
+            3,
+            __DIR__ . '/../../storage/logs/app.log'
+        );
+        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Data gagal dihapus'];
     }
+    $this->redirect('/mahasiswa');
+}
 
     public function show(int $id): void
     {

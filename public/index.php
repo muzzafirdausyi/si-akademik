@@ -41,117 +41,127 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 $authMiddleware = ['App\Core\Middleware\AuthMiddleware'];
 
-// ------------------------------------------------------------------
-// 1) Route statis (persis sama), dari routes/web.php
-// ------------------------------------------------------------------
-if (isset($routes[$method][$uri])) {
-    $route = $routes[$method][$uri];
-    $controllerName = $route[0];
-    $action = $route[1];
-
-    runMiddleware($route['middleware'] ?? []);
-
-    $controllerClass = "App\\Controllers\\{$controllerName}";
-    $controller = new $controllerClass();
-    $controller->$action();
-
-} else {
+try {
     // ------------------------------------------------------------------
-    // 2) Route dinamis: /mahasiswa/{id}, /prodi/{id}/edit, dst
+    // 1) Route statis (persis sama), dari routes/web.php
     // ------------------------------------------------------------------
-    $segments = explode('/', trim($uri, '/'));
+    if (isset($routes[$method][$uri])) {
+        $route = $routes[$method][$uri];
+        $controllerName = $route[0];
+        $action = $route[1];
 
-    if ($method === 'GET' && count($segments) === 2
-        && $segments[0] === 'mahasiswa'
-        && ctype_digit($segments[1])) {
+        runMiddleware($route['middleware'] ?? []);
 
-        // GET /mahasiswa/5
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MahasiswaController())->show((int) $segments[1]);
-
-    } elseif ($method === 'GET' && count($segments) === 3
-        && $segments[0] === 'mahasiswa'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'edit') {
-
-        // GET /mahasiswa/5/edit
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MahasiswaController())->edit((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'mahasiswa'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'update') {
-
-        // POST /mahasiswa/5/update
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MahasiswaController())->update((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'mahasiswa'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'delete') {
-
-        // POST /mahasiswa/5/delete
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MahasiswaController())->destroy((int) $segments[1]);
-
-    } elseif ($method === 'GET' && count($segments) === 3
-        && $segments[0] === 'prodi'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'edit') {
-
-        // GET /prodi/{id}/edit
-        runMiddleware($authMiddleware);
-        (new App\Controllers\ProdiController())->edit((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'prodi'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'update') {
-
-        // POST /prodi/{id}/update
-        runMiddleware($authMiddleware);
-        (new App\Controllers\ProdiController())->update((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'prodi'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'delete') {
-
-        // POST /prodi/{id}/delete
-        runMiddleware($authMiddleware);
-        (new App\Controllers\ProdiController())->destroy((int) $segments[1]);
-
-    } elseif ($method === 'GET' && count($segments) === 3
-        && $segments[0] === 'matakuliah'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'edit') {
-
-        // GET /matakuliah/{id}/edit
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MatakuliahController())->edit((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'matakuliah'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'update') {
-
-        // POST /matakuliah/{id}/update
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MatakuliahController())->update((int) $segments[1]);
-
-    } elseif ($method === 'POST' && count($segments) === 3
-        && $segments[0] === 'matakuliah'
-        && ctype_digit($segments[1])
-        && $segments[2] === 'delete') {
-
-        // POST /matakuliah/{id}/delete
-        runMiddleware($authMiddleware);
-        (new App\Controllers\MatakuliahController())->destroy((int) $segments[1]);
+        $controllerClass = "App\\Controllers\\{$controllerName}";
+        $controller = new $controllerClass();
+        $controller->$action();
 
     } else {
-        http_response_code(404);
-        echo "404 - Halaman tidak ditemukan";
+        // ------------------------------------------------------------------
+        // 2) Route dinamis: /mahasiswa/{id}, /prodi/{id}/edit, dst
+        // ------------------------------------------------------------------
+        $segments = explode('/', trim($uri, '/'));
+
+        if ($method === 'GET' && count($segments) === 2
+            && $segments[0] === 'mahasiswa'
+            && ctype_digit($segments[1])) {
+
+            // GET /mahasiswa/5
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MahasiswaController())->show((int) $segments[1]);
+
+        } elseif ($method === 'GET' && count($segments) === 3
+            && $segments[0] === 'mahasiswa'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'edit') {
+
+            // GET /mahasiswa/5/edit
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MahasiswaController())->edit((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'mahasiswa'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'update') {
+
+            // POST /mahasiswa/5/update
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MahasiswaController())->update((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'mahasiswa'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'delete') {
+
+            // POST /mahasiswa/5/delete
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MahasiswaController())->destroy((int) $segments[1]);
+
+        } elseif ($method === 'GET' && count($segments) === 3
+            && $segments[0] === 'prodi'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'edit') {
+
+            // GET /prodi/{id}/edit
+            runMiddleware($authMiddleware);
+            (new App\Controllers\ProdiController())->edit((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'prodi'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'update') {
+
+            // POST /prodi/{id}/update
+            runMiddleware($authMiddleware);
+            (new App\Controllers\ProdiController())->update((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'prodi'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'delete') {
+
+            // POST /prodi/{id}/delete
+            runMiddleware($authMiddleware);
+            (new App\Controllers\ProdiController())->destroy((int) $segments[1]);
+
+        } elseif ($method === 'GET' && count($segments) === 3
+            && $segments[0] === 'matakuliah'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'edit') {
+
+            // GET /matakuliah/{id}/edit
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MatakuliahController())->edit((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'matakuliah'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'update') {
+
+            // POST /matakuliah/{id}/update
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MatakuliahController())->update((int) $segments[1]);
+
+        } elseif ($method === 'POST' && count($segments) === 3
+            && $segments[0] === 'matakuliah'
+            && ctype_digit($segments[1])
+            && $segments[2] === 'delete') {
+
+            // POST /matakuliah/{id}/delete
+            runMiddleware($authMiddleware);
+            (new App\Controllers\MatakuliahController())->destroy((int) $segments[1]);
+
+        } else {
+            http_response_code(404);
+            echo "404 - Halaman tidak ditemukan";
+        }
     }
+} catch (\PDOException $e) {
+    error_log(
+        date('Y-m-d H:i:s') . ' - Koneksi/query database gagal: ' . $e->getMessage() . PHP_EOL,
+        3,
+        __DIR__ . '/../storage/logs/app.log'
+    );
+    http_response_code(500);
+    echo "Maaf, terjadi gangguan pada server. Silakan coba beberapa saat lagi.";
 }

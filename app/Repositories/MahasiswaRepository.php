@@ -86,4 +86,20 @@ class MahasiswaRepository
         ]);
         return $stmt->fetchAll();
     }
+        public function existsByNim(string $nim, ?int $excludeId = null): bool
+    {
+        if ($excludeId !== null) {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) FROM mahasiswa WHERE nim = :nim AND id != :id"
+            );
+            $stmt->execute(['nim' => $nim, 'id' => $excludeId]);
+        } else {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) FROM mahasiswa WHERE nim = :nim"
+            );
+            $stmt->execute(['nim' => $nim]);
+        }
+
+        return (bool) $stmt->fetchColumn();
+    }
 }
