@@ -1,0 +1,6 @@
+# ACARA 5 - .htaccess dan URL Rewriting
+# Semua request yang bukan file/folder nyata diteruskan ke index.php
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
